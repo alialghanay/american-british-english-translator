@@ -1,19 +1,13 @@
 "use strict";
 
-const Translator = require("../components/translator.js");
+const { translator } = require("../middlewares/translator-middleware");
+const { requiredFields } = require("../controllers/translator-fields");
 
 module.exports = function (app) {
-  const translator = new Translator();
-
-  app.route("/api/translate").post((req, res) => {
-    const { text, locale } = req.body;
-    let result = undefined;
-    if (locale === "american-to-british")
-      result = translator.americanToBritish(text);
-    else if (locale === "british-to-american")
-      result = translator.britishToAmerican(text);
-    console.log(locale, text);
-    console.log(result);
-    res.json(result);
+  app.route("/api/translate").post(requiredFields, (req, res) => {
+    translator(req.body.text, req.body.locale, (err, data) => {
+      if (err) res.status(200).json(err);
+      if (data) res.status(200).json(data);
+    });
   });
 };
